@@ -45,4 +45,4 @@ Explore and test the backend API with Swagger UI:
 
 ---
 
-Happy coding! 🚀🍿
+
