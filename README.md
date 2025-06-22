@@ -6,7 +6,7 @@ Welcome to **movieapp-MERN** — a full-stack movie application leveraging the p
 
 ## 🚀 Quick Start
 
-Set up and launch all services with these simple steps:
+**Please start the Frontend and Backend before launching the Python microservice!**
 
 ### 1. Backend (NestJS)
 ```bash
@@ -23,6 +23,7 @@ npm run dev
 ```
 
 ### 3. Recommendation Microservice (Python + FastAPI)
+> ⚠️ **Note:** Start this service **after** both the backend and frontend are running.
 ```bash
 cd Python-recommendation-microservice
 pip install -r requirements.txt
