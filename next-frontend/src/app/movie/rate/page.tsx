@@ -1,7 +1,6 @@
 'use client';
 
-import { AlertCircle, Calendar, Film, RefreshCw, Star } from 'lucide-react';
-import Image from 'next/image';
+import { AlertCircle, Calendar, Film, Heart, RefreshCw, Star } from 'lucide-react';
 import Link from 'next/link';
 import React, { useEffect, useState } from 'react';
 
@@ -34,6 +33,13 @@ interface RateMovieProps {
 
 // API Configuration - Match your main page configuration
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+
+// Image utility function
+const getImageUrl = (imageUrl?: string) => {
+    if (!imageUrl) return '/api/placeholder/300/450';
+    if (imageUrl.startsWith('http')) return imageUrl;
+    return `${API_BASE_URL}${imageUrl}`;
+};
 
 // API utility functions
 const getAuthHeaders = () => {
@@ -125,7 +131,7 @@ const api = {
     }
 };
 
-// Rate Movie Component
+// Rate Movie Component with improved image handling
 const RateMovie: React.FC<RateMovieProps> = ({ movie, onRatingSubmit }) => {
     const [hoveredRating, setHoveredRating] = useState(0);
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -191,13 +197,14 @@ const RateMovie: React.FC<RateMovieProps> = ({ movie, onRatingSubmit }) => {
 
     if (isLoading) {
         return (
-            <div className="bg-white rounded-lg shadow-lg p-6 max-w-md mx-auto">
+            <div className="bg-white rounded-lg shadow-lg p-6 max-w-2xl mx-auto">
                 <div className="animate-pulse">
-                    <div className="flex items-center space-x-4 mb-4">
-                        <div className="w-20 h-30 bg-gray-300 rounded"></div>
-                        <div className="flex-1">
-                            <div className="h-6 bg-gray-300 rounded mb-2"></div>
-                            <div className="h-4 bg-gray-300 rounded w-3/4"></div>
+                    <div className="flex flex-col sm:flex-row items-start space-y-4 sm:space-y-0 sm:space-x-6 mb-6">
+                        <div className="w-full sm:w-32 h-48 bg-gray-300 rounded mx-auto sm:mx-0"></div>
+                        <div className="flex-1 w-full">
+                            <div className="h-6 bg-gray-300 rounded mb-3"></div>
+                            <div className="h-4 bg-gray-300 rounded w-3/4 mb-2"></div>
+                            <div className="h-4 bg-gray-300 rounded w-1/2"></div>
                         </div>
                     </div>
                     <div className="h-4 bg-gray-300 rounded mb-2"></div>
@@ -208,39 +215,41 @@ const RateMovie: React.FC<RateMovieProps> = ({ movie, onRatingSubmit }) => {
     }
 
     return (
-        <div className="bg-white rounded-lg shadow-lg p-6 max-w-md mx-auto">
-            <div className="flex items-center space-x-4 mb-4">
-                <Image
-                    src={movie?.imageUrl || '/api/placeholder/80/120'}
-                    alt={movie?.title}
-                    width={80}
-                    height={120}
-                    className="w-20 h-30 object-cover rounded"
-                />
-                <div>
-                    <h3 className="text-xl font-bold text-gray-800">{movie?.title}</h3>
-                    <p className="text-gray-600 text-sm">{movie?.category?.name}</p>
-                    <div className="flex items-center text-gray-500 text-sm mt-1">
-                        <Calendar className="w-4 h-4 mr-1" />
-                        {new Date(movie?.releaseDate).getFullYear()}
+        <div className="bg-white rounded-lg shadow-lg p-6 max-w-2xl mx-auto">
+            <div className="flex flex-col sm:flex-row items-start space-y-4 sm:space-y-0 sm:space-x-6 mb-6">
+                <div className="relative w-full sm:w-32 h-48 bg-gray-200 rounded overflow-hidden mx-auto sm:mx-0 flex-shrink-0">
+                    <img
+                        src={getImageUrl(movie?.imageUrl)}
+                        alt={movie?.title}
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                            e.currentTarget.src = '/api/placeholder/300/450';
+                        }}
+                    />
+                    <div className="absolute top-2 right-2 bg-black bg-opacity-70 text-white px-2 py-1 rounded text-xs">
+                        {movie?.category?.name}
                     </div>
+                </div>
+                <div className="flex-1 text-center sm:text-left">
+                    <h3 className="text-2xl font-bold text-gray-800 mb-2">{movie?.title}</h3>
+                    <div className="flex items-center justify-center sm:justify-start text-gray-500 text-sm mb-3">
+                        <Calendar className="w-4 h-4 mr-1" />
+                        <span>{new Date(movie?.releaseDate).getFullYear()}</span>
+                    </div>
+                    <p className="text-gray-700 leading-relaxed">{movie?.description}</p>
                 </div>
             </div>
 
-            <div className="mb-4">
-                <p className="text-gray-700 text-sm line-clamp-3">{movie?.description}</p>
-            </div>
-
-            <div className="text-center">
-                <h4 className="text-lg font-semibold mb-3 text-gray-800">Rate this movie</h4>
+            <div className="text-center border-t pt-6">
+                <h4 className="text-xl font-semibold mb-4 text-gray-800">Rate this movie</h4>
 
                 {userRating > 0 && (
-                    <div className="text-sm text-blue-600 mb-2 flex items-center justify-center">
+                    <div className="text-sm text-blue-600 mb-3 flex items-center justify-center bg-blue-50 rounded-lg py-2 px-4">
                         <span>Your rating: {userRating}/5 stars</span>
                         <button
                             onClick={handleDeleteRating}
                             disabled={isSubmitting}
-                            className="ml-2 text-red-500 hover:text-red-700 disabled:opacity-50"
+                            className="ml-3 text-red-500 hover:text-red-700 disabled:opacity-50 font-bold text-lg"
                             title="Delete rating"
                         >
                             ×
@@ -248,7 +257,7 @@ const RateMovie: React.FC<RateMovieProps> = ({ movie, onRatingSubmit }) => {
                     </div>
                 )}
 
-                <div className="flex justify-center space-x-1 mb-4">
+                <div className="flex justify-center space-x-2 mb-6">
                     {[1, 2, 3, 4, 5].map((star) => (
                         <button
                             key={star}
@@ -256,10 +265,10 @@ const RateMovie: React.FC<RateMovieProps> = ({ movie, onRatingSubmit }) => {
                             onMouseEnter={() => setHoveredRating(star)}
                             onMouseLeave={() => setHoveredRating(0)}
                             disabled={isSubmitting}
-                            className="p-1 transition-colors duration-200 disabled:opacity-50"
+                            className="p-2 transition-all duration-200 disabled:opacity-50 hover:scale-110"
                         >
                             <Star
-                                className={`w-8 h-8 ${star <= (hoveredRating || userRating)
+                                className={`w-10 h-10 ${star <= (hoveredRating || userRating)
                                     ? 'text-yellow-400 fill-current'
                                     : 'text-gray-300'
                                     } hover:text-yellow-400 transition-colors`}
@@ -269,15 +278,15 @@ const RateMovie: React.FC<RateMovieProps> = ({ movie, onRatingSubmit }) => {
                 </div>
 
                 {isSubmitting && (
-                    <p className="text-sm text-blue-600 flex items-center justify-center">
-                        <RefreshCw className="w-4 h-4 mr-1 animate-spin" />
+                    <p className="text-sm text-blue-600 flex items-center justify-center bg-blue-50 rounded-lg py-2 px-4">
+                        <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
                         {userRating > 0 ? 'Updating rating...' : 'Submitting rating...'}
                     </p>
                 )}
 
                 {error && (
-                    <p className="text-sm text-red-600 flex items-center justify-center">
-                        <AlertCircle className="w-4 h-4 mr-1" />
+                    <p className="text-sm text-red-600 flex items-center justify-center bg-red-50 rounded-lg py-2 px-4">
+                        <AlertCircle className="w-4 h-4 mr-2" />
                         {error}
                     </p>
                 )}
@@ -286,7 +295,47 @@ const RateMovie: React.FC<RateMovieProps> = ({ movie, onRatingSubmit }) => {
     );
 };
 
-// Movie Selector Component
+// Updated MovieCard component with better image handling
+const MovieCard = ({ movie, onMovieSelect }: { movie: Movie; onMovieSelect: (movie: Movie) => void }) => (
+    <div
+        onClick={() => onMovieSelect(movie)}
+        className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow group cursor-pointer"
+    >
+        <div className="relative aspect-[2/3] bg-gray-200 overflow-hidden">
+            <img
+                src={getImageUrl(movie.imageUrl)}
+                alt={movie.title}
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                onError={(e) => {
+                    e.currentTarget.src = '/api/placeholder/300/450';
+                }}
+            />
+            <div className="absolute top-2 right-2 bg-black bg-opacity-70 text-white px-2 py-1 rounded text-xs font-medium">
+                {movie.category.name}
+            </div>
+            <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+        </div>
+        <div className="p-4">
+            <h3 className="font-bold text-lg mb-2 line-clamp-1 group-hover:text-blue-600 transition-colors">
+                {movie.title}
+            </h3>
+            <p className="text-gray-600 text-sm mb-3 line-clamp-2 leading-relaxed">
+                {movie.description}
+            </p>
+            <div className="flex items-center justify-between text-sm text-gray-500">
+                <div className="flex items-center">
+                    <Calendar className="w-4 h-4 mr-1" />
+                    <span>{new Date(movie.releaseDate).getFullYear()}</span>
+                </div>
+                <button className="p-1 border border-gray-300 rounded hover:bg-gray-50 hover:border-red-300 transition-colors group/heart">
+                    <Heart className="w-4 h-4 group-hover/heart:text-red-500 transition-colors" />
+                </button>
+            </div>
+        </div>
+    </div>
+);
+
+// Movie Selector Component with improved layout
 const MovieSelector: React.FC<{ onMovieSelect: (movie: Movie) => void }> = ({ onMovieSelect }) => {
     const [movies, setMovies] = useState<Movie[]>([]);
     const [loading, setLoading] = useState(true);
@@ -328,47 +377,41 @@ const MovieSelector: React.FC<{ onMovieSelect: (movie: Movie) => void }> = ({ on
     };
 
     return (
-        <div className="max-w-6xl mx-auto p-6">
-            <div className="mb-6">
-                <h2 className="text-2xl font-bold text-gray-800 mb-4">Select a Movie to Rate</h2>
-                <input
-                    type="text"
-                    placeholder="Search movies..."
-                    value={searchQuery}
-                    onChange={(e) => handleSearch(e.target.value)}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
+        <div className="max-w-7xl mx-auto p-6">
+            <div className="mb-8">
+                <h2 className="text-3xl font-bold text-gray-800 mb-4 text-center">Select a Movie to Rate</h2>
+                <div className="max-w-md mx-auto">
+                    <input
+                        type="text"
+                        placeholder="Search movies..."
+                        value={searchQuery}
+                        onChange={(e) => handleSearch(e.target.value)}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent shadow-sm"
+                    />
+                </div>
             </div>
 
             {(loading || searchLoading) ? (
-                <div className="flex justify-center py-8">
+                <div className="flex justify-center py-12">
                     <RefreshCw className="w-8 h-8 animate-spin text-blue-600" />
                 </div>
             ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                    {movies.slice(0, 12).map((movie) => (
-                        <div
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+                    {movies.slice(0, 15).map((movie) => (
+                        <MovieCard
                             key={movie.id}
-                            onClick={() => onMovieSelect(movie)}
-                            className="bg-white rounded-lg shadow-md overflow-hidden cursor-pointer hover:shadow-lg transition-shadow"
-                        >
-                            <Image
-                                src={movie.imageUrl || '/api/placeholder/200/300'}
-                                alt={movie.title}
-                                width={200}
-                                height={300}
-                                className="w-full h-48 object-cover"
-                            />
-                            <div className="p-3">
-                                <h3 className="font-semibold text-gray-800 text-sm line-clamp-2 mb-1">
-                                    {movie.title}
-                                </h3>
-                                <p className="text-xs text-gray-500">
-                                    {movie.category.name} • {new Date(movie.releaseDate).getFullYear()}
-                                </p>
-                            </div>
-                        </div>
+                            movie={movie}
+                            onMovieSelect={onMovieSelect}
+                        />
                     ))}
+                </div>
+            )}
+
+            {!loading && !searchLoading && movies.length === 0 && (
+                <div className="text-center py-12">
+                    <Film className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                    <h3 className="text-xl font-medium text-gray-600 mb-2">No movies found</h3>
+                    <p className="text-gray-500">Try adjusting your search terms</p>
                 </div>
             )}
         </div>
@@ -395,7 +438,7 @@ export default function RateMoviesPage() {
     return (
         <div className="min-h-screen bg-gray-50">
             {/* Header */}
-            <header className="bg-white shadow-md">
+            <header className="bg-white shadow-md sticky top-0 z-50">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex items-center justify-between h-16">
                         <Link href="/" className="flex items-center space-x-2">
@@ -403,23 +446,23 @@ export default function RateMoviesPage() {
                             <h1 className="text-2xl font-bold text-gray-900">MovieApp</h1>
                         </Link>
 
-                        <div className="flex items-center space-x-4">
+                        <nav className="hidden md:flex items-center space-x-6">
                             <Link
                                 href="/"
-                                className="text-gray-600 hover:text-blue-600 transition-colors"
+                                className="text-gray-600 hover:text-blue-600 transition-colors font-medium"
                             >
                                 Home
                             </Link>
                             <Link
                                 href="/recommendations"
-                                className="text-gray-600 hover:text-blue-600 transition-colors"
+                                className="text-gray-600 hover:text-blue-600 transition-colors font-medium"
                             >
                                 Recommendations
                             </Link>
                             <span className="text-blue-600 font-medium">
                                 Rate Movies
                             </span>
-                        </div>
+                        </nav>
                     </div>
                 </div>
             </header>
@@ -429,10 +472,10 @@ export default function RateMoviesPage() {
                 {!selectedMovie ? (
                     <MovieSelector onMovieSelect={handleMovieSelect} />
                 ) : (
-                    <div className="max-w-md mx-auto">
+                    <div className="max-w-2xl mx-auto">
                         <button
                             onClick={() => setSelectedMovie(null)}
-                            className="mb-6 flex items-center text-blue-600 hover:text-blue-800 text-sm transition-colors"
+                            className="mb-6 flex items-center text-blue-600 hover:text-blue-800 text-sm transition-colors font-medium"
                         >
                             ← Back to movie selection
                         </button>

@@ -351,29 +351,44 @@ export default function Home() {
     logout(); // Use the logout function from AuthContext
   };
 
+  // Updated MovieCard component with better image handling
   const MovieCard = ({ movie }: { movie: Movie }) => (
-    <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
-      <div className="relative">
-        <img src={getImageUrl(movie.imageUrl)} alt={movie.title} className="w-full h-48 object-cover" />
-        <div className="absolute top-2 right-2 bg-black bg-opacity-70 text-white px-2 py-1 rounded text-sm">
+    <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow group">
+      <div className="relative aspect-[2/3] bg-gray-200 overflow-hidden">
+        <img
+          src={getImageUrl(movie.imageUrl)}
+          alt={movie.title}
+          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+          onError={(e) => {
+            // Fallback to placeholder if image fails to load
+            e.currentTarget.src = '/api/placeholder/300/450';
+          }}
+        />
+        <div className="absolute top-2 right-2 bg-black bg-opacity-70 text-white px-2 py-1 rounded text-xs font-medium">
           {movie.category.name}
         </div>
+        {/* Optional: Add a gradient overlay for better text readability */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
       </div>
 
       <div className="p-4">
-        <h3 className="font-bold text-lg mb-2 line-clamp-1">{movie.title}</h3>
-        <p className="text-gray-600 text-sm mb-3 line-clamp-2">{movie.description}</p>
+        <h3 className="font-bold text-lg mb-2 line-clamp-1 group-hover:text-blue-600 transition-colors">
+          {movie.title}
+        </h3>
+        <p className="text-gray-600 text-sm mb-3 line-clamp-2 leading-relaxed">
+          {movie.description}
+        </p>
 
         <div className="flex items-center justify-between text-sm text-gray-500 mb-3">
           <div className="flex items-center">
             <Calendar className="w-4 h-4 mr-1" />
-            {new Date(movie.releaseDate).getFullYear()}
+            <span>{new Date(movie.releaseDate).getFullYear()}</span>
           </div>
           {movie.averageRating && movie.totalRatings && movie.totalRatings > 0 && (
-            <div className="flex items-center">
+            <div className="flex items-center bg-yellow-50 px-2 py-1 rounded">
               <Star className="w-4 h-4 mr-1 text-yellow-500 fill-current" />
-              <span>{movie.averageRating.toFixed(1)}</span>
-              <span className="ml-1">({movie.totalRatings})</span>
+              <span className="font-medium">{movie.averageRating.toFixed(1)}</span>
+              <span className="ml-1 text-gray-400">({movie.totalRatings})</span>
             </div>
           )}
         </div>
@@ -381,12 +396,12 @@ export default function Home() {
         <div className="flex space-x-2">
           <Link
             href={`/movie/${movie.id}`}
-            className="flex-1 bg-blue-600 text-white py-2 px-4 rounded text-center hover:bg-blue-700 transition-colors"
+            className="flex-1 bg-blue-600 text-white py-2 px-4 rounded text-center hover:bg-blue-700 transition-colors font-medium text-sm"
           >
             View Details
           </Link>
-          <button className="p-2 border border-gray-300 rounded hover:bg-gray-50 transition-colors">
-            <Heart className="w-4 h-4" />
+          <button className="p-2 border border-gray-300 rounded hover:bg-gray-50 hover:border-red-300 transition-colors group/heart">
+            <Heart className="w-4 h-4 group-hover/heart:text-red-500 transition-colors" />
           </button>
         </div>
       </div>
