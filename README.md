@@ -30,6 +30,10 @@ pip install -r requirements.txt
 uvicorn main:app --reload --host 0.0.0.0 --port 5000
 ```
 
+## License and third-party software
+
+This repository is shared for portfolio purposes. See [LICENSE](./LICENSE) for usage terms.
+
 ---
 
 ## 📚 API Documentation
